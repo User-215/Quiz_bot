@@ -38,4 +38,4 @@ Quiz_bot является свободно распространяемой пр
 ## Контакты
 e-mail: udn.326@gmail.com
 
-Telegram: @ursden215
+Telegram: [@ursden215](https://t.me/ursden215)
