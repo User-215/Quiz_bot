@@ -1,4 +1,5 @@
 import aiosqlite
+from aiogram import types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import types
 from questions import quiz_data
@@ -7,10 +8,10 @@ from time import strftime, gmtime
 # Зададём имя базы данных
 DB_NAME = 'quiz_bot.db'
 
-def current_time():
+def current_time() -> str:
     return strftime("%d.%m.%Y %H:%M:%S", gmtime())
 
-async def create_table():
+async def create_table() -> None:
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
         # Создаем таблицу
@@ -18,7 +19,7 @@ async def create_table():
         # # Сохраняем изменения
         await db.commit()
 
-async def get_quiz_index(user_id):
+async def get_quiz_index(user_id: int) -> int:
      # Подключаемся к базе данных
      async with aiosqlite.connect(DB_NAME) as db:
         # Получаем запись для заданного пользователя
@@ -27,7 +28,7 @@ async def get_quiz_index(user_id):
             result = await cursor.fetchone()
             return result[0] if result is not None else 0
 
-async def update_quiz_index(user_id, index):
+async def update_quiz_index(user_id: int, index: int) -> None:
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
         # Обновляем запись
@@ -35,7 +36,7 @@ async def update_quiz_index(user_id, index):
         # Сохраняем изменения
         await db.commit()
 
-async def get_score(user_id):
+async def get_score(user_id: int) -> int:
      # Подключаемся к базе данных
      async with aiosqlite.connect(DB_NAME) as db:
         # Получаем запись для заданного пользователя
@@ -44,7 +45,7 @@ async def get_score(user_id):
             result = await cursor.fetchone()
             return result[0] if result is not None else 0
 
-async def update_score(user_id, score):
+async def update_score(user_id: int, score: int) -> None:
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
         # Обновляем запись
@@ -52,7 +53,7 @@ async def update_score(user_id, score):
         # Сохраняем изменения
         await db.commit()
 
-async def update_last_score(user_id, score):
+async def update_last_score(user_id: int, score: int) -> None:
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
         # Обновляем запись
@@ -60,7 +61,7 @@ async def update_last_score(user_id, score):
         # Сохраняем изменения
         await db.commit()
 
-def generate_options_keyboard(answer_options, right_answer):
+def generate_options_keyboard(answer_options: tuple) -> types.InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
 
     for i, option in enumerate(answer_options):
@@ -74,13 +75,12 @@ def generate_options_keyboard(answer_options, right_answer):
     builder.adjust(1)
     return builder.as_markup()
 
-async def get_question(message, user_id):
+async def get_question(message: types.Message, user_id: int) -> None:
     # Получение текущего вопроса из словаря состояний пользователя
     current_question_index = await get_quiz_index(user_id)
     print(current_time(), user_id, 'Текущий вопрос', current_question_index)
-    correct_index = quiz_data[current_question_index]['correct_option']
     opts = quiz_data[current_question_index]['options']
-    kb = generate_options_keyboard(opts, opts[correct_index])
+    kb = generate_options_keyboard(opts)
     current_message = await message.answer(f"Вопрос {current_question_index + 1} из {len(quiz_data)}\n{quiz_data[current_question_index]['question']}", reply_markup=kb)
     # Создаем соединение с базой данных (если она не существует, она будет создана)
     async with aiosqlite.connect(DB_NAME) as db:
@@ -89,7 +89,7 @@ async def get_question(message, user_id):
         # Сохраняем изменения
         await db.commit()
 
-async def new_quiz(message):
+async def new_quiz(message: types.Message) -> None:
     user_id = message.from_user.id
     user_name = message.from_user.username
     print(current_time(), user_id, 'Начало нового квиза.')
@@ -120,7 +120,7 @@ async def new_quiz(message):
     await update_score(user_id, current_score)
     await get_question(message, user_id)
  
-async def check_answer(callback):
+async def check_answer(callback: types.CallbackQuery) -> None:
    # Получение текущего вопроса из словаря состояний пользователя.
     current_question_index = await get_quiz_index(callback.from_user.id)
     correct_option = quiz_data[current_question_index]['correct_option']
@@ -155,7 +155,7 @@ async def check_answer(callback):
         reply_markup=None
     )
 
-async def statistic():
+async def statistic() -> list:
      # Подключаемся к базе данных
      async with aiosqlite.connect(DB_NAME) as db:
         # Получаем все записи с id пользователя, его именем и последним результатом квиза.

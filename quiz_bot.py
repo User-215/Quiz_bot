@@ -20,13 +20,14 @@ bot = Bot(token=os.getenv("API_TOKEN"))
 # Диспетчер
 dp = Dispatcher()
 
+# Хэндлер на коллбек клавиатуры с вариантами ответов
 @dp.callback_query()
-async def press_answer(callback: types.CallbackQuery):
+async def tap_answer(callback: types.CallbackQuery) -> None:
     await check_answer(callback)
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def cmd_start(message: types.Message) -> None:
     builder = ReplyKeyboardBuilder()
     builder.add(types.KeyboardButton(text="Начать игру"))
     builder.add(types.KeyboardButton(text="Статистика"))
@@ -36,14 +37,14 @@ async def cmd_start(message: types.Message):
 # Хэндлер на команду /quiz
 @dp.message(F.text=="Начать игру")
 @dp.message(Command("quiz"))
-async def cmd_quiz(message: types.Message):
+async def cmd_quiz(message: types.Message) -> None:
     await message.answer("Давайте начнём квиз!")
     await new_quiz(message)
 
 # Хэндлер на команду /statistic
 @dp.message(F.text=="Статистика")
 @dp.message(Command("statistic"))
-async def cmd_statistic(message: types.Message):
+async def cmd_statistic(message: types.Message) -> None:
     current_user_id = message.from_user.id
     last_scores = await statistic()
     result = [f'{user_id} \\- {user_name} \\- {last_score}' if user_id != current_user_id else f'_*__{user_id} \\- {user_name} \\- {last_score}__*_' for user_id, user_name, last_score in last_scores]
@@ -52,19 +53,19 @@ async def cmd_statistic(message: types.Message):
 # Хэндлер на команду /help
 @dp.message(F.text=="Помощь")
 @dp.message(Command("help"))
-async def cmd_help(message: types.Message):
+async def cmd_help(message: types.Message) -> None:
     try:
         # Читаем содержимое файла
-        with open('help.txt') as file:
+        with open('help.md2') as file:
             readme_content = file.read()
         # Отправляем содержимое файла как сообщение с Markdown-разметкой
-        await message.answer(readme_content)
+        await message.answer(readme_content, parse_mode='MarkdownV2')
     except FileNotFoundError:
-        await message.reply("Файл README.md не найден.")
+        await message.answer("Файл help.md не найден.")
     except Exception as e:
-        await message.reply(f"Возникла ошибка: {e}")
+        await message.answer(f"Возникла ошибка: {e}")
 
-async def main():
+async def main() -> None:
 
     # Запускаем создание таблицы базы данных
     await create_table()
