@@ -47,8 +47,8 @@ async def cmd_quiz(message: types.Message) -> None:
 async def cmd_statistic(message: types.Message) -> None:
     current_user_id = message.from_user.id
     last_scores = await statistic()
-    result = [f'{user_id} \\- {user_name} \\- {last_score}' if user_id != current_user_id else f'_*__{user_id} \\- {user_name} \\- {last_score}__*_' for user_id, user_name, last_score in last_scores]
-    await message.answer('\n'.join(['ID \\- Name \\- Score'] + result), parse_mode='MarkdownV2')
+    result = [f'{user_id} - {user_name} - {last_score}' if user_id != current_user_id else f'<b><i><u>{user_id} - {user_name} - {last_score}</u></i></b>' for user_id, user_name, last_score in last_scores]
+    await message.answer('\n'.join(['ID - Name - Score'] + result), parse_mode='HTML')
 
 # Хэндлер на команду /help
 @dp.message(F.text=="Помощь")
